@@ -32,8 +32,8 @@ else
 common_exynos4_dirs += libhwcomposer
 endif
 
-exynos4210_dirs := $(common_exynos4_dirs) libs5pjpeg libfimg3x
-exynos4x12_dirs := $(common_exynos4_dirs) libhwjpeg libfimg4x
+exynos4210_dirs := $(common_exynos4_dirs) libs5pjpeg libfimg3x include
+exynos4x12_dirs := $(common_exynos4_dirs) libhwjpeg libfimg4x include
 
 ifeq ($(TARGET_SOC),exynos4210)
   include $(call all-named-subdir-makefiles,$(exynos4210_dirs))
