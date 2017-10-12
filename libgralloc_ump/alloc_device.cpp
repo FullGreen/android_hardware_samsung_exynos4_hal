@@ -27,6 +27,7 @@
  * limitations under the License.
  */
 
+//#define LOG_NDEBUG 0
 #include <string.h>
 #include <errno.h>
 #include <pthread.h>
@@ -96,9 +97,18 @@ extern int get_bpp(int format);
 
 #define EXYNOS4_ALIGN( value, base ) (((value) + ((base) - 1)) & ~((base) - 1))
 
+static uint64_t next_backing_store_id()
+{
+    static std::atomic<uint64_t> next_id(1);
+    return next_id++;
+}
+
 static int gralloc_alloc_buffer(alloc_device_t* dev, size_t size, int usage,
                                 buffer_handle_t* pHandle, int w, int h,
                                 int format, int bpp, int stride_raw, int stride)
+ALOGV("%s: size:%d usage:%d w:%d h:%d format:%d bpp:%d stride_raw:%d stride:%d",
+        __func__, size, usage, w,h, format, bpp, stride_raw, stride);
+
 {
     ump_handle ump_mem_handle;
     void *cpu_ptr;
@@ -215,6 +225,7 @@ static int gralloc_alloc_buffer(alloc_device_t* dev, size_t size, int usage,
         }
 
         *pHandle = hnd;
+        hnd->backing_store = next_backing_store_id();
         hnd->format = format;
         hnd->usage = usage;
         hnd->width = w;
@@ -323,6 +334,7 @@ static int gralloc_alloc_buffer(alloc_device_t* dev, size_t size, int usage,
 					}
 #endif
 
+                    hnd->backing_store = next_backing_store_id();
 					hnd->format = format;
 					hnd->usage = usage;
 					hnd->width = w;
@@ -359,6 +371,8 @@ static int gralloc_alloc_framebuffer_locked(alloc_device_t* dev, size_t size, in
                                             buffer_handle_t* pHandle, int w, int h,
                                             int format, int bpp, int stride)
 {
+    ALOGV("%s: size:%d usage:%d w:%d h:%d format:%d bpp:%d ",
+          __func__, size, usage, w,h, format, bpp);
     private_module_t* m = reinterpret_cast<private_module_t*>(dev->common.module);
 
     ALOGD_IF(debug_level > 0, "%s size=0x%x usage=0x%x w=%d h=%d format=0x%x(%d) bpp=%d stride=%d", __func__, size, usage, w, h, format, format, bpp, stride);
@@ -425,6 +439,7 @@ static int gralloc_alloc_framebuffer_locked(alloc_device_t* dev, size_t size, in
     hnd->width = w;
     hnd->height = h;
     hnd->bpp = bpp;
+    hnd->backing_store = next_backing_store_id();
     hnd->paddr = l_paddr;
     hnd->stride = stride;
 
@@ -437,7 +452,9 @@ static int gralloc_alloc_framebuffer(alloc_device_t* dev, size_t size, int usage
                                      buffer_handle_t* pHandle, int w, int h,
                                      int format, int bpp, int stride)
 {
-   
+
+    ALOGV("%s: size:%d usage:%d w:%d h:%d format:%d bpp:%d",
+          __func__, size, usage, w,h, format, bpp);
     private_module_t* m = reinterpret_cast<private_module_t*>(dev->common.module);
     pthread_mutex_lock(&m->lock);
     int err = gralloc_alloc_framebuffer_locked(dev, size, usage, pHandle, w, h, format, bpp, stride);
@@ -451,6 +468,8 @@ static int alloc_device_alloc(alloc_device_t* dev, int w, int h, int format,
     int l_usage = usage;
     int bpp = 0;
 
+    ALOGV("%s: usage:%d w:%d h:%d format:%d ",
+          __func__, usage, w,h, format);
     if (!pHandle || !pStride || w < 0 || h < 0)
         return -EINVAL;
 
