@@ -81,13 +81,18 @@ LOCAL_SRC_FILES:= \
     SecHdmiClient.cpp
 
 LOCAL_C_INCLUDES += \
-	$(JNI_H_INCLUDE)
+	$(JNI_H_INCLUDE) \
+    frameworks/native/libs/nativewindow/include \
+    frameworks/native/libs/arect/include \
+    frameworks/native/libs/nativebase/include
 
 LOCAL_SHARED_LIBRARIES := \
 	libbinder \
 	libutils \
 	liblog \
-	libTVOut
+	libTVOut \
+    android.hidl.token@1.0-utils \
+    android.hardware.graphics.bufferqueue@1.0
 
 ifeq ($(TARGET_SIMULATOR),true)
 ifeq ($(TARGET_OS),linux)

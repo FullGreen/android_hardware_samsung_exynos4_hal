@@ -30,6 +30,9 @@ LOCAL_SRC_FILES := \
 
 LOCAL_C_INCLUDES += $(LOCAL_PATH)
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../include
+LOCAL_C_INCLUDES += frameworks/native/libs/nativewindow/include \
+    frameworks/native/libs/arect/include \
+    frameworks/native/libs/nativebase/include
 
 ifeq ($(TARGET_SOC),exynos4210)
 LOCAL_CFLAGS += -DSAMSUNG_EXYNOS4210
